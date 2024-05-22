@@ -13,7 +13,7 @@ import (
 
 func TestAuthenticatePositive(t *testing.T) {
 	authURL := "https://example.com/auth"
-	responseBody := `{"id": 12345, "name": "John Doe", "email": "john.doe@example.com"}`
+	responseBody := `{"id": 1, "name": "John", "email": "john.doe@example.com"}`
 	body := io.NopCloser(bytes.NewBufferString(responseBody))
 
 	mockHTTPClient := new(mocks.HTTPClient)
@@ -21,10 +21,14 @@ func TestAuthenticatePositive(t *testing.T) {
 		Return(&http.Response{StatusCode: http.StatusOK, Body: body}, nil)
 
 	client := New(Config{AuthURL: authURL}, mockHTTPClient)
-	userID, err := client.Authenticate("sample_token")
+	user, err := client.Authenticate("sample_token")
 
 	assert.NoError(t, err)
-	assert.Equal(t, 12345, userID)
+	assert.Equal(t, CurrentUser{
+		ID:    1,
+		Name:  "John",
+		Email: "john.doe@example.com",
+	}, *user)
 
 	mockHTTPClient.AssertExpectations(t)
 }
@@ -39,10 +43,10 @@ func TestAuthenticateInvalidToken(t *testing.T) {
 		Return(&http.Response{StatusCode: http.StatusUnauthorized, Body: body}, nil)
 
 	client := New(Config{AuthURL: authURL}, mockHTTPClient)
-	userID, err := client.Authenticate("invalid_token")
+	user, err := client.Authenticate("invalid_token")
 
 	assert.Error(t, err)
-	assert.Equal(t, 0, userID)
+	assert.Nil(t, user)
 	assert.Contains(t, err.Error(), "authentication failed")
 
 	mockHTTPClient.AssertExpectations(t)

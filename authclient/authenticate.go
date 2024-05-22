@@ -7,30 +7,28 @@ import (
 	"net/http"
 )
 
-func (ac *Client) Authenticate(token string) (userID int, err error) {
+func (ac *Client) Authenticate(token string) (user *CurrentUser, err error) {
 	data := map[string]string{"token": token}
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	resp, err := ac.HTTPClient.Post(ac.Cfg.AuthURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("authentication failed: %d", resp.StatusCode)
+		return nil, fmt.Errorf("authentication failed: %d", resp.StatusCode)
 	}
-
-	var user currentUser
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return user.ID, nil
+	return user, nil
 }

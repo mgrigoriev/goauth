@@ -5,6 +5,12 @@ import (
 	"net/http"
 )
 
+type CurrentUser struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type Config struct {
 	AuthURL string
 }

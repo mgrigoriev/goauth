@@ -18,10 +18,10 @@ func main() {
 	cfg := authclient.Config{AuthURL: authURL}
 	cl := authclient.New(cfg, httpClient)
 
-	userID, err := cl.Authenticate(token)
+	user, err := cl.Authenticate(token)
 	if err != nil {
 		log.Fatalf("authentication failed: %v", err)
 	}
 
-	log.Printf("authenticated user ID: %d", userID)
+	log.Printf("authenticated user ID: %d", user.ID)
 }
