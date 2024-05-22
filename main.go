@@ -1,4 +1,4 @@
-// Usage example
+// USAGE EXAMPLE
 
 package main
 
