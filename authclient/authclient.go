@@ -1,27 +1,27 @@
 package authclient
 
 import (
+	"io"
 	"net/http"
-	"time"
 )
 
-const authURL = "http://users:8080/api/v1/users/auth"
-const timeout = 5 * time.Second
+type Config struct {
+	AuthURL string
+}
 
-type currentUser struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+//go:generate mockery --name=HTTPClient --filename=http_client_mock.go --disable-version-string
+type HTTPClient interface {
+	Post(url, contentType string, body io.Reader) (*http.Response, error)
 }
 
 type Client struct {
-	httpClient *http.Client
+	HTTPClient HTTPClient
+	Cfg        Config
 }
 
-func New() *Client {
-	httpClient := http.Client{Timeout: timeout}
-
+func New(cfg Config, httpClient HTTPClient) *Client {
 	return &Client{
-		httpClient: &httpClient,
+		HTTPClient: httpClient,
+		Cfg:        cfg,
 	}
 }

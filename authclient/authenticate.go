@@ -15,7 +15,7 @@ func (ac *Client) Authenticate(token string) (userID int, err error) {
 		return 0, err
 	}
 
-	resp, err := ac.httpClient.Post(authURL, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := ac.HTTPClient.Post(ac.Cfg.AuthURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return 0, err
 	}
