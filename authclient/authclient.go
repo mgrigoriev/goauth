@@ -1,8 +1,8 @@
 package authclient
 
 import (
-	"io"
 	"net/http"
+	"time"
 )
 
 type CurrentUser struct {
@@ -17,7 +17,7 @@ type Config struct {
 
 //go:generate mockery --name=HTTPClient --filename=http_client_mock.go --disable-version-string
 type HTTPClient interface {
-	Post(url, contentType string, body io.Reader) (*http.Response, error)
+	Do(req *http.Request) (*http.Response, error)
 }
 
 type Client struct {
@@ -25,7 +25,18 @@ type Client struct {
 	Cfg        Config
 }
 
-func New(cfg Config, httpClient HTTPClient) *Client {
+func New(cfg Config) *Client {
+	httpClient := &http.Client{
+		Transport: &retryRoundTripper{
+			next:       http.DefaultTransport,
+			maxRetries: 10,
+			delay:      300 * time.Millisecond,
+		},
+	}
+	return Init(cfg, httpClient)
+}
+
+func Init(cfg Config, httpClient HTTPClient) *Client {
 	return &Client{
 		HTTPClient: httpClient,
 		Cfg:        cfg,

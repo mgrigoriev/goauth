@@ -3,7 +3,6 @@
 package mocks
 
 import (
-	io "io"
 	http "net/http"
 
 	mock "github.com/stretchr/testify/mock"
@@ -14,29 +13,29 @@ type HTTPClient struct {
 	mock.Mock
 }
 
-// Post provides a mock function with given fields: url, contentType, body
-func (_m *HTTPClient) Post(url string, contentType string, body io.Reader) (*http.Response, error) {
-	ret := _m.Called(url, contentType, body)
+// Do provides a mock function with given fields: req
+func (_m *HTTPClient) Do(req *http.Request) (*http.Response, error) {
+	ret := _m.Called(req)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Post")
+		panic("no return value specified for Do")
 	}
 
 	var r0 *http.Response
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, io.Reader) (*http.Response, error)); ok {
-		return rf(url, contentType, body)
+	if rf, ok := ret.Get(0).(func(*http.Request) (*http.Response, error)); ok {
+		return rf(req)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, io.Reader) *http.Response); ok {
-		r0 = rf(url, contentType, body)
+	if rf, ok := ret.Get(0).(func(*http.Request) *http.Response); ok {
+		r0 = rf(req)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*http.Response)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, io.Reader) error); ok {
-		r1 = rf(url, contentType, body)
+	if rf, ok := ret.Get(1).(func(*http.Request) error); ok {
+		r1 = rf(req)
 	} else {
 		r1 = ret.Error(1)
 	}
