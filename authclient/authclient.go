@@ -1,6 +1,7 @@
 package authclient
 
 import (
+	"golang.org/x/time/rate"
 	"net/http"
 	"time"
 )
@@ -28,9 +29,12 @@ type Client struct {
 func New(cfg Config) *Client {
 	httpClient := &http.Client{
 		Transport: &retryRoundTripper{
-			next:       http.DefaultTransport,
+			next: &rateLimitRoundTripper{
+				next:    http.DefaultTransport,
+				limiter: rate.NewLimiter(rate.Every(100*time.Millisecond), 2),
+			},
 			maxRetries: 10,
-			delay:      300 * time.Millisecond,
+			delay:      10 * time.Millisecond,
 		},
 	}
 	return Init(cfg, httpClient)
