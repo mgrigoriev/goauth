@@ -1,6 +1,7 @@
 package authclient
 
 import (
+	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
 	"net/http"
 	"time"
@@ -27,16 +28,30 @@ type Client struct {
 }
 
 func New(cfg Config) *Client {
+	cb := gobreaker.NewCircuitBreaker(gobreaker.Settings{
+		Name:        "HTTP Client",
+		MaxRequests: 1,
+		Interval:    time.Duration(60) * time.Second,
+		Timeout:     time.Duration(30) * time.Second,
+		ReadyToTrip: func(counts gobreaker.Counts) bool {
+			return counts.ConsecutiveFailures > 3
+		},
+	})
+
 	httpClient := &http.Client{
 		Transport: &retryRoundTripper{
 			next: &rateLimitRoundTripper{
-				next:    http.DefaultTransport,
-				limiter: rate.NewLimiter(rate.Every(100*time.Millisecond), 2),
+				next: &circuitBreakerRoundTripper{
+					next:           http.DefaultTransport,
+					circuitBreaker: cb,
+				},
+				limiter: rate.NewLimiter(rate.Every(500*time.Millisecond), 2),
 			},
 			maxRetries: 10,
-			delay:      10 * time.Millisecond,
+			delay:      100 * time.Millisecond,
 		},
 	}
+
 	return Init(cfg, httpClient)
 }
 
