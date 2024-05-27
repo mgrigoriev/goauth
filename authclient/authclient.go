@@ -15,6 +15,7 @@ type CurrentUser struct {
 
 type Config struct {
 	AuthURL string
+	Timeout time.Duration
 }
 
 //go:generate mockery --name=HTTPClient --filename=http_client_mock.go --disable-version-string
@@ -50,6 +51,7 @@ func New(cfg Config) *Client {
 			maxRetries: 10,
 			delay:      100 * time.Millisecond,
 		},
+		Timeout: cfg.Timeout,
 	}
 
 	return Init(cfg, httpClient)
