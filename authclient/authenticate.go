@@ -15,7 +15,13 @@ func (ac *Client) Authenticate(token string) (user *CurrentUser, err error) {
 		return nil, err
 	}
 
-	resp, err := ac.HTTPClient.Post(ac.Cfg.AuthURL, "application/json", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, ac.Cfg.AuthURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := ac.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

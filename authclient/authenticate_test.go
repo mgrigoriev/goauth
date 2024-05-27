@@ -17,10 +17,10 @@ func TestAuthenticatePositive(t *testing.T) {
 	body := io.NopCloser(bytes.NewBufferString(responseBody))
 
 	mockHTTPClient := new(mocks.HTTPClient)
-	mockHTTPClient.On("Post", authURL, "application/json", mock.Anything).
+	mockHTTPClient.On("Do", mock.Anything).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: body}, nil)
 
-	client := New(Config{AuthURL: authURL}, mockHTTPClient)
+	client := Init(Config{AuthURL: authURL}, mockHTTPClient)
 	user, err := client.Authenticate("sample_token")
 
 	assert.NoError(t, err)
@@ -39,10 +39,10 @@ func TestAuthenticateInvalidToken(t *testing.T) {
 	body := io.NopCloser(bytes.NewBufferString(responseBody))
 
 	mockHTTPClient := new(mocks.HTTPClient)
-	mockHTTPClient.On("Post", authURL, "application/json", mock.Anything).
+	mockHTTPClient.On("Do", mock.Anything).
 		Return(&http.Response{StatusCode: http.StatusUnauthorized, Body: body}, nil)
 
-	client := New(Config{AuthURL: authURL}, mockHTTPClient)
+	client := Init(Config{AuthURL: authURL}, mockHTTPClient)
 	user, err := client.Authenticate("invalid_token")
 
 	assert.Error(t, err)
