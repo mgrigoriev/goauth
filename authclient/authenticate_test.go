@@ -2,6 +2,7 @@ package authclient
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"testing"
@@ -20,8 +21,10 @@ func TestAuthenticatePositive(t *testing.T) {
 	mockHTTPClient.On("Do", mock.Anything).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: body}, nil)
 
+	ctx := context.Background()
+
 	client := Init(Config{AuthURL: authURL}, mockHTTPClient)
-	user, err := client.Authenticate("sample_token")
+	user, err := client.Authenticate(ctx, "sample_token")
 
 	assert.NoError(t, err)
 	assert.Equal(t, CurrentUser{
@@ -42,8 +45,10 @@ func TestAuthenticateInvalidToken(t *testing.T) {
 	mockHTTPClient.On("Do", mock.Anything).
 		Return(&http.Response{StatusCode: http.StatusUnauthorized, Body: body}, nil)
 
+	ctx := context.Background()
+
 	client := Init(Config{AuthURL: authURL}, mockHTTPClient)
-	user, err := client.Authenticate("invalid_token")
+	user, err := client.Authenticate(ctx, "invalid_token")
 
 	assert.Error(t, err)
 	assert.Nil(t, user)

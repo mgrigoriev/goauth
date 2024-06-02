@@ -2,6 +2,7 @@ package authclient
 
 import (
 	"github.com/sony/gobreaker"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/time/rate"
 	"net/http"
 	"time"
@@ -40,7 +41,7 @@ func New(cfg Config) *Client {
 	})
 
 	httpClient := &http.Client{
-		Transport: &retryRoundTripper{
+		Transport: otelhttp.NewTransport(&retryRoundTripper{
 			next: &rateLimitRoundTripper{
 				next: &circuitBreakerRoundTripper{
 					next:           http.DefaultTransport,
@@ -50,7 +51,7 @@ func New(cfg Config) *Client {
 			},
 			maxRetries: 10,
 			delay:      100 * time.Millisecond,
-		},
+		}),
 		Timeout: cfg.Timeout,
 	}
 
