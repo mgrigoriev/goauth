@@ -2,12 +2,13 @@ package authclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-func (ac *Client) Authenticate(token string) (user *CurrentUser, err error) {
+func (ac *Client) Authenticate(ctx context.Context, token string) (user *CurrentUser, err error) {
 	data := map[string]string{"token": token}
 
 	jsonData, err := json.Marshal(data)
@@ -15,9 +16,14 @@ func (ac *Client) Authenticate(token string) (user *CurrentUser, err error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, ac.Cfg.AuthURL, bytes.NewBuffer(jsonData))
+	//req, err := http.NewRequest(http.MethodPost, ac.Cfg.AuthURL, bytes.NewBuffer(jsonData))
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ac.Cfg.AuthURL, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
