@@ -23,6 +23,11 @@ func (ac *Client) Authenticate(ctx context.Context, token string) (user *Current
 
 	req.Header.Set("Content-Type", "application/json")
 
+	// Log the request headers for debugging purposes
+	for k, v := range req.Header {
+		fmt.Printf("%s: %s\n", k, v)
+	}
+
 	resp, err := ac.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
