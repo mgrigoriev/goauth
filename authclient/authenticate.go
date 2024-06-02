@@ -25,7 +25,7 @@ func (ac *Client) Authenticate(ctx context.Context, token string) (user *Current
 
 	// Log the request headers for debugging purposes
 	for k, v := range req.Header {
-		fmt.Printf("%s: %s\n", k, v)
+		ac.Logger.Infof("[AUTH REQUEST HTTP HEADER] %s: %s\n", k, v)
 	}
 
 	resp, err := ac.HTTPClient.Do(req)
