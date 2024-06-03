@@ -5,10 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/labstack/echo-contrib/jaegertracing"
+	"github.com/opentracing/opentracing-go"
+
 	"net/http"
 )
 
 func (ac *Client) Authenticate(ctx context.Context, token string) (user *CurrentUser, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "chatservers.Authenticate")
+	defer span.Finish()
+
 	data := map[string]string{"token": token}
 
 	jsonData, err := json.Marshal(data)
@@ -16,7 +22,7 @@ func (ac *Client) Authenticate(ctx context.Context, token string) (user *Current
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ac.Cfg.AuthURL, bytes.NewBuffer(jsonData))
+	req, err := jaegertracing.NewTracedRequest(http.MethodPost, ac.Cfg.AuthURL, bytes.NewBuffer(jsonData), span)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
@@ -42,6 +48,8 @@ func (ac *Client) Authenticate(ctx context.Context, token string) (user *Current
 	if err != nil {
 		return nil, err
 	}
+
+	span.SetTag("user_id", user.ID)
 
 	return user, nil
 }
